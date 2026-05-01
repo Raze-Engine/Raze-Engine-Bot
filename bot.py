@@ -7,7 +7,6 @@ from threading import Thread
 
 # ==========================================
 # 1. CLOUD CONFIGURATION
-# (Pulls secret keys directly from Render's Environment Variables)
 # ==========================================
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
@@ -15,7 +14,7 @@ GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
 bot = telebot.TeleBot(TELEGRAM_BOT_TOKEN)
 groq_client = Groq(api_key=GROQ_API_KEY)
 
-# Using the Vision model so the bot can read photos sent by staff
+# Using the Vision model so the bot can read photos
 GROQ_MODEL = "llama-3.2-11b-vision-preview"
 
 # ==========================================
