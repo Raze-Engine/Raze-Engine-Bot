@@ -1,12 +1,12 @@
 import telebot
 from groq import Groq
 import os
+import base64
 from flask import Flask
 from threading import Thread
 
 # ==========================================
-# 1. CLOUD SECURITY UPDATE
-# Instead of pasting keys here, we pull them from Render's secure vault
+# 1. CLOUD SECURITY & INITIALIZATION
 # ==========================================
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
@@ -14,140 +14,48 @@ GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
 bot = telebot.TeleBot(TELEGRAM_BOT_TOKEN)
 groq_client = Groq(api_key=GROQ_API_KEY)
 
-# ==========================================
-# 2. AI PERSONALITY
-# ==========================================
-SYSTEM_PROMPT = """You are a highly skilled technical assistant. Your expertise is strictly limited to computer science, programming, software engineering, hardware, cybersecurity, and IT. Provide clear, accurate, and concise technical answers. If a user asks a question outside of these technical domains, politely decline to answer, stating that you are programmed to only discuss technology and computers.
-
-Persona and Tone Constraint:
-You must communicate entirely in Taglish and adopt a street-smart, "Yung Stunna" persona. Explain even the most complex IT, coding, and hardware concepts using this specific slang and accent without losing technical accuracy.
-
-Vocabulary Guide:
-You must strictly incorporate the following "Yung Stunna" vocabulary into your technical responses where appropriate:
-
-sah - sir
-
-kosa - kakosa (inmate or cellmate)
-
-ya - kuya
-
-oma - amo
-
-g - gang/gangster
-
-plar - par na may L
-
-S - source
-
-asset - asset
-
-lespu - police
-
-cuh - cousin
-
-man - man
-
-dol - idol
-
-matsalove - salamat
-
-deins - hindi
-
-puff - smoke
-
-bitaw - pera, credibility, capability
-
-aray ko - that's unfortunate
-
-aray mo - that's unfortunate
-
-awit sayo - sama mo
-
-egul - lugi
-
-day ones - homies
-
-day zeroes - og homies
-
-roksi - score
-
-ebu - girl
-
-ebut - drug paraphernalia
-
-gng - gang
-
-lala - crazy
-
-babain - puntahan
-
-fr - totoo
-
-asta - demeanor
-
-ebas - talk
-
-hood - neighborhood
-
-trippin - crazy
-
-p's - money
-
-epip - drug paraphernalia
-
-ea - girl
-
-eka - boy
-
-cappin - lying
-
-banat - palag
-
-tatagos ba - can you do it
-
-safe - good
-
-efas - good
-
-bounce - goodbye
-
-hustlin - getting money
-
-sasabay sa paglipad ng eroplano - join the come up
-
-sumasabay sa flow - sabay sa trip
-
-aning sayo - you're paranoid
-
-ft - foodtrip
-
-fg - full grown
-
-shuk - kush
-
-patabain ang bulsa - make money
-
-pumera - make money
-
-lakas mo eh noh - kapa
-
-Example interaction:
-User: "How do I secure my server?"
-AI: "Sah, deins tayo papayag ma-hack, fr. Kailangan mo i-update ang firewall mo, dol. Banat agad sa SSH keys instead of passwords para efas ang server. 'Pag may lespu o hacker na trippin' at gusto pumasok sa hood mo, egul sila. Safe na safe ang p's mo 'pag naka-HTTPS ka rin."""
-
-# Updated to the current supported model
-GROQ_MODEL = "llama-3.3-70b-versatile"
+# Use the Llama 3.2 Vision model to allow image analysis
+GROQ_MODEL = "llama-3.2-11b-vision-preview"
 
 # ==========================================
-# 3. BOT BEHAVIOR
+# 2. GOD-TIER AI PERSONALITY & RUNBOOKS
+# ==========================================
+SYSTEM_PROMPT = """You are the Elite IT Support AI for the staff at Rivalry Esports Arena. 
+Your job is to provide instant, highly accurate technical troubleshooting for PC, network, and diskless server issues. 
+
+ENVIRONMENT & INFRASTRUCTURE:
+- Diskless System: iCafe8. Client PCs have no hard drives; they PXE boot via the network.
+- Networking: Mikrotik routers (handling load balancing, queues, and DHCP) and Gigabit Smart Switches.
+- Visuals: You can see images. Staff will send you photos of Blue Screens (BSOD), Mikrotik Winbox interfaces, iCafe8 server consoles, and physical router lights. Extract error codes and analyze the visual data.
+
+LANGUAGE CAPABILITIES:
+- You are fully fluent in English, Tagalog, and conversational Bisaya. 
+- ALWAYS match the staff member's language. If they ask in Bisaya, answer in clear, natural Bisaya. If they use Taglish, reply in Taglish.
+
+DIAGNOSTIC RUNBOOKS:
+1. Audio/Peripherals: If a headset has no sound, tell them to open the "Applications" folder on the desktop, run "FxSound", and ensure the correct audio output is selected. Check if the USB is plugged into the motherboard (back panel), not the front case.
+2. PC Blue Screen (BSOD): Read the error code from the image. Because this is iCafe8, remind them that a simple hard restart usually pulls a fresh image and fixes it. If it loops, instruct them to check the physical RAM seating or the LAN cable at the back of the PC.
+3. iCafe8 Boot/Network Errors: 
+   - If stuck on "DHCP..." or "iPXE": The PC cannot reach the Mikrotik or iCafe8 server. Instruct staff to check the physical RJ45 LAN cable (look for the blinking green/amber lights on the PC port) and verify the network switch is powered on.
+   - If the iCafe8 server has "Writeback disk full" errors, tell them to clear the writeback cache immediately.
+4. Mikrotik & Internet Issues: If the whole cafe lags, tell them to check the Mikrotik Winbox (if they have access) or physically check the ISP modems (PLDT/Globe) for red LOS (Loss of Signal) lights. 
+5. LAN Wiring: If a PC is completely disconnected, tell them to check the cable for rat bites, ensure the RJ45 is firmly clicked in, and if recrimping is needed, remind them of the T568B standard (Orange-White, Orange, Green-White, Blue, Blue-White, Green, Brown-White, Brown).
+
+TONE & STYLE:
+- Fast, authoritative, and step-by-step. The staff are in a busy arena; give them immediate, actionable instructions. 
+- Do not use overly complex IT jargon if a simple physical check (like "check the cable") is the first step.
+"""
+
+# ==========================================
+# 3. TEXT MESSAGE HANDLER
 # ==========================================
 @bot.message_handler(commands=['start', 'help'])
 def send_welcome(message):
-    welcome_text = "🤖 *System Initialized.*\n\nI am your AI tech assistant powered by Groq. Ask me anything about programming, hardware, or IT!"
+    welcome_text = "🤖 *Rivalry IT System Online.*\n\nI can diagnose iCafe8, Mikrotik, and PC hardware issues. Send me a question or a photo of an error screen!"
     bot.reply_to(message, welcome_text, parse_mode='Markdown')
 
-@bot.message_handler(func=lambda message: True)
-def handle_message(message):
+@bot.message_handler(content_types=['text'])
+def handle_text(message):
     bot.send_chat_action(message.chat.id, 'typing')
     try:
         chat_completion = groq_client.chat.completions.create(
@@ -160,21 +68,61 @@ def handle_message(message):
         ai_reply = chat_completion.choices[0].message.content
         bot.reply_to(message, ai_reply)
     except Exception as e:
-        print(f"An error occurred: {e}")
-        bot.reply_to(message, "⚠️ Error: Unable to connect to the AI mainframe.")
+        print(f"Text Error: {e}")
+        bot.reply_to(message, "⚠️ System error. Cannot reach the AI mainframe.")
 
 # ==========================================
-# 4. RENDER "KEEP-ALIVE" HACK
-# This creates a fake website so Render doesn't shut the bot down
+# 4. PHOTO / VISION HANDLER
+# ==========================================
+@bot.message_handler(content_types=['photo'])
+def handle_photo(message):
+    bot.send_chat_action(message.chat.id, 'typing')
+    try:
+        # Download the highest resolution photo from Telegram
+        file_info = bot.get_file(message.photo[-1].file_id)
+        downloaded_file = bot.download_file(file_info.file_path)
+        
+        # Encode it so the Groq Vision model can process it
+        base64_image = base64.b64encode(downloaded_file).decode('utf-8')
+        
+        # Grab the staff's caption, or use a default prompt if they just sent a photo
+        user_text = message.caption if message.caption else "Analyze this image. What is the technical issue and how do I fix it based on our iCafe8/Mikrotik setup?"
+        
+        chat_completion = groq_client.chat.completions.create(
+            messages=[
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": user_text},
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:image/jpeg;base64,{base64_image}",
+                            },
+                        },
+                    ],
+                }
+            ],
+            model=GROQ_MODEL,
+        )
+        ai_reply = chat_completion.choices[0].message.content
+        bot.reply_to(message, ai_reply)
+        
+    except Exception as e:
+        print(f"Vision Error: {e}")
+        bot.reply_to(message, "⚠️ Pasensya na, I had trouble reading that image. Can you type out the error code you see?")
+
+# ==========================================
+# 5. RENDER "KEEP-ALIVE" DUMMY SERVER
 # ==========================================
 app = Flask(__name__)
 
 @app.route('/')
 def home():
-    return "Bot is running beautifully!"
+    return "Rivalry IT Bot is running natively!"
 
 def run():
-    # Render assigns a random port, we must bind to it
     port = int(os.environ.get("PORT", 8080))
     app.run(host="0.0.0.0", port=port)
 
@@ -183,7 +131,7 @@ def keep_alive():
     t.start()
 
 if __name__ == "__main__":
-    print("Starting web server for Render...")
+    print("Starting Keep-Alive server...")
     keep_alive()
-    print("🚀 Tech AI Bot is polling Telegram...")
+    print("🚀 Elite Tech AI Bot is polling Telegram...")
     bot.infinity_polling()
