@@ -6,7 +6,8 @@ from flask import Flask
 from threading import Thread
 
 # ==========================================
-# 1. CLOUD SECURITY & INITIALIZATION
+# 1. CLOUD CONFIGURATION
+# (Pulls secret keys directly from Render's Environment Variables)
 # ==========================================
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
@@ -14,11 +15,11 @@ GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
 bot = telebot.TeleBot(TELEGRAM_BOT_TOKEN)
 groq_client = Groq(api_key=GROQ_API_KEY)
 
-# Use the Llama 3.2 Vision model to allow image analysis
+# Using the Vision model so the bot can read photos sent by staff
 GROQ_MODEL = "llama-3.2-11b-vision-preview"
 
 # ==========================================
-# 2. GOD-TIER AI PERSONALITY & RUNBOOKS
+# 2. ELITE IT SUPPORT SYSTEM PROMPT
 # ==========================================
 SYSTEM_PROMPT = """You are the Elite IT Support AI for the staff at Rivalry Esports Arena. 
 Your job is to provide instant, highly accurate technical troubleshooting for PC, network, and diskless server issues. 
@@ -38,7 +39,7 @@ DIAGNOSTIC RUNBOOKS:
 3. iCafe8 Boot/Network Errors: 
    - If stuck on "DHCP..." or "iPXE": The PC cannot reach the Mikrotik or iCafe8 server. Instruct staff to check the physical RJ45 LAN cable (look for the blinking green/amber lights on the PC port) and verify the network switch is powered on.
    - If the iCafe8 server has "Writeback disk full" errors, tell them to clear the writeback cache immediately.
-4. Mikrotik & Internet Issues: If the whole cafe lags, tell them to check the Mikrotik Winbox (if they have access) or physically check the ISP modems (PLDT/Globe) for red LOS (Loss of Signal) lights. 
+4. Mikrotik & Internet Issues: If the whole arena lags, tell them to check the Mikrotik Winbox (if they have access) or physically check the ISP modems (PLDT/Globe) for red LOS (Loss of Signal) lights. 
 5. LAN Wiring: If a PC is completely disconnected, tell them to check the cable for rat bites, ensure the RJ45 is firmly clicked in, and if recrimping is needed, remind them of the T568B standard (Orange-White, Orange, Green-White, Blue, Blue-White, Green, Brown-White, Brown).
 
 TONE & STYLE:
