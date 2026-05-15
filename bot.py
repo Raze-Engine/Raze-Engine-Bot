@@ -20,7 +20,7 @@ GROQ_MODEL = "llama-3.2-11b-vision-preview"
 # ==========================================
 # 2. ELITE IT SUPPORT SYSTEM PROMPT
 # ==========================================
-SYSTEM_PROMPT = "You are Raze Engine x Samsung Ai an expert, friendly, and highly adaptable AI tech assistant. Your goal is to help users with absolutely anything related to technology—ranging from software troubleshooting, coding, and hardware recommendations, to explaining complex tech concepts in simple terms.
+SYSTEM_PROMPT = "You are Raze Engine x Samsung Ai an expert, friendly, and highly adaptable AI tech assistant. Your goal is to be a samsung Ai, you will help users with absolutely anything related to technology—ranging from software troubleshooting, coding, and hardware recommendations, to explaining complex tech concepts in simple terms.
 
 Title:
 1. You are Raze Engine x Samsung
@@ -40,6 +40,7 @@ TONE & STYLE:
 - Be solutions-oriented. If a technical problem is complex, break it down into step-by-step guides.
 
 CAPABILITIES:
+- Hardware Troubleshooting(unplugged wires, and everything)
 - Coding & Debugging (Python, JavaScript, HTML, etc.)
 - Gadget & PC Building Recommendations
 - Troubleshooting tech issues (slow internet, software bugs, app errors)
@@ -52,7 +53,7 @@ If you understand your role, greet the user warmly in a mix of English, Tagalog,
 # ==========================================
 @bot.message_handler(commands=['start', 'help'])
 def send_welcome(message):
-    welcome_text = "🤖 *Rivalry IT System Online.*\n\nI can diagnose iCafe8, Mikrotik, and PC hardware issues. Send me a question or a photo of an error screen!"
+    welcome_text = "🤖 *Raze Engine x Samsung Ai is online, ask me anything!"
     bot.reply_to(message, welcome_text, parse_mode='Markdown')
 
 @bot.message_handler(content_types=['text'])
@@ -70,7 +71,7 @@ def handle_text(message):
         bot.reply_to(message, ai_reply)
     except Exception as e:
         print(f"Text Error: {e}")
-        bot.reply_to(message, "⚠️ System error. Cannot reach the AI mainframe.")
+        bot.reply_to(message, "⚠️Wait sa , kay lag kaayo")
 
 # ==========================================
 # 4. PHOTO / VISION HANDLER
@@ -87,7 +88,7 @@ def handle_photo(message):
         base64_image = base64.b64encode(downloaded_file).decode('utf-8')
         
         # Grab the staff's caption, or use a default prompt if they just sent a photo
-        user_text = message.caption if message.caption else "Analyze this image. What is the technical issue and how do I fix it based on our iCafe8/Mikrotik setup?"
+        user_text = message.caption if message.caption else "Analyze this image. how to fix this issue?"
         
         chat_completion = groq_client.chat.completions.create(
             messages=[
@@ -121,7 +122,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def home():
-    return "Rivalry IT Bot is running natively!"
+    return "Raze Engine x Samsung Ai is runnning"
 
 def run():
     port = int(os.environ.get("PORT", 8080))
@@ -134,5 +135,5 @@ def keep_alive():
 if __name__ == "__main__":
     print("Starting Keep-Alive server...")
     keep_alive()
-    print("🚀 Elite Tech AI Bot is polling Telegram...")
+    print("🚀 Raze engine x Samsung AI Bot is polling Telegram...")
     bot.infinity_polling()
