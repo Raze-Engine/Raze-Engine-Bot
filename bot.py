@@ -1,20 +1,30 @@
-import telebot
-from groq import Groq
 import os
 import base64
-from flask import Flask
 from threading import Thread
+from flask import Flask
+import telebot
+from groq import Groq
+from dotenv import load_dotenv
+
+# Load local .env file if testing locally (ignored by Render automatically)
+load_dotenv()
 
 # ==========================================
-# 1. CLOUD CONFIGURATION
+# 1. CLOUD CONFIGURATION & VALIDATION
 # ==========================================
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
 
+# Fail early and loudly if environment variables are missing
+if not TELEGRAM_BOT_TOKEN:
+    raise ValueError("CRITICAL ERROR: TELEGRAM_BOT_TOKEN environment variable is missing!")
+if not GROQ_API_KEY:
+    raise ValueError("CRITICAL ERROR: GROQ_API_KEY environment variable is missing!")
+
 bot = telebot.TeleBot(TELEGRAM_BOT_TOKEN)
 groq_client = Groq(api_key=GROQ_API_KEY)
 
-# Using the Vision model so the bot can read photos
+# Using the Vision model so the bot can read text and photos
 GROQ_MODEL = "llama-3.2-11b-vision-preview"
 
 # ==========================================
@@ -45,7 +55,8 @@ If you understand your role, await the user's first scenario, objection, or prod
 # ==========================================
 @bot.message_handler(commands=['start', 'help'])
 def send_welcome(message):
-    welcome_text = "🤖 *Hi there, agent from wave 69!"
+    # FIXED: Closed the asterisk (*) markdown formatting to prevent Telegram parsing errors
+    welcome_text = "🤖 *Hi there, agent from wave 69!*"
     bot.reply_to(message, welcome_text, parse_mode='Markdown')
 
 @bot.message_handler(content_types=['text'])
@@ -63,7 +74,7 @@ def handle_text(message):
         bot.reply_to(message, ai_reply)
     except Exception as e:
         print(f"Text Error: {e}")
-        bot.reply_to(message, "⚠️Wait sa , kay lag kaayo")
+        bot.reply_to(message, "⚠️ Wait sa, kay lag kaayo. (Something went wrong with the AI provider.)")
 
 # ==========================================
 # 4. PHOTO / VISION HANDLER
@@ -114,18 +125,22 @@ app = Flask(__name__)
 
 @app.route('/')
 def home():
-    return "Raze Ai is running"
+    return "Raze Ai is running smoothly."
 
 def run():
+    # Render maps internal app routing automatically via PORT env variable
     port = int(os.environ.get("PORT", 8080))
     app.run(host="0.0.0.0", port=port)
 
 def keep_alive():
     t = Thread(target=run)
+    t.daemon = True  # Allows thread to exit when the main program stops
     t.start()
 
 if __name__ == "__main__":
     print("Starting Keep-Alive server...")
     keep_alive()
     print("🚀 Raze Ai Bot is polling Telegram...")
-    bot.infinity_polling()
+    
+    # infinity_polling handles accidental disconnects gracefully
+    bot.infinity_polling(timeout=10, long_polling_timeout=5)
