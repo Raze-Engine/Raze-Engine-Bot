@@ -45,7 +45,7 @@ If you understand your role, await the user's first scenario, objection, or prod
 # ==========================================
 @bot.message_handler(commands=['start', 'help'])
 def send_welcome(message):
-    welcome_text = "🤖 *Raze Engine x Samsung Ai is online, ask me anything!"
+    welcome_text = "🤖 *Hi there, agent from wave 69!"
     bot.reply_to(message, welcome_text, parse_mode='Markdown')
 
 @bot.message_handler(content_types=['text'])
@@ -105,7 +105,7 @@ def handle_photo(message):
         
     except Exception as e:
         print(f"Vision Error: {e}")
-        bot.reply_to(message, "⚠️ Pasensya na, I had trouble reading that image. Can you type out the error code you see?")
+        bot.reply_to(message, "⚠️ Pasensya na, I had trouble reading that image. Can you explain nalang?")
 
 # ==========================================
 # 5. RENDER "KEEP-ALIVE" DUMMY SERVER
@@ -114,7 +114,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def home():
-    return "Raze Engine x Samsung Ai is runnning"
+    return "Raze Ai is running"
 
 def run():
     port = int(os.environ.get("PORT", 8080))
@@ -127,5 +127,5 @@ def keep_alive():
 if __name__ == "__main__":
     print("Starting Keep-Alive server...")
     keep_alive()
-    print("🚀 Raze engine x Samsung AI Bot is polling Telegram...")
+    print("🚀 Raze Ai Bot is polling Telegram...")
     bot.infinity_polling()
